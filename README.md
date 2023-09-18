@@ -24,7 +24,7 @@ This is a small project, but I still need help with some things:
 1) Though it's scratch code, cleaning some of it up and optimizing it would go a long way in making the transition to web programming much smoother.
 2) If you read the code, you'll notice that I have a specific way of writing the rows and columns due to the hexagon grid layout. If you have a better, clear, more efficient way of creating the grid and/or checking that the user solution is correct, let me know.
 3) Any work on the JavaScript, HTML, and CSS would help tremendously. I'm not very good at HTML and CSS so anything there to replicate a look similar look to the example is awesome. This also inclues any UI suggestions to make things clearly (such as adding arrows next to the clues to indicate what they are addressing).
-4) The user should be able to mark a cell as ineligible with a right mouse click which should prevent them from coloring it in unless they unmark it.
+4) ~~The user should be able to mark a cell as ineligible with a right mouse click which should prevent them from coloring it in unless they unmark it.~~ Ok I added this. But it definitely could be better. I'm open to suggestions.
 
 Look at other nanograms (such as http://liouh.com/picross/) for inspiration in how things should generally work.
 

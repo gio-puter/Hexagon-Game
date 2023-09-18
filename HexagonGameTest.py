@@ -73,9 +73,12 @@ class HexGrid(Canvas):
         self.printRightDiagLabels(columnNumber)
         self.printLeftDiagLabels(2*rowNumber-1, columnNumber)
 
-        self.bind("<Button-1>", self.handleMouseClick)
-        self.bind("<B1-Motion>", self.handleMouseMotion)
+        self.bind("<Button-1>", self.handleLeftMouseClick)
+        self.bind("<B1-Motion>", self.handleLeftMouseMotion)
+        self.bind("<Button-2>", self.handleRightMouseClick)
+        self.bind("<B2-Motion>", self.handleRightMouseMotion)
         self.bind("<ButtonRelease-1>", lambda event: self.switched.clear())
+        self.bind("<ButtonRelease-2>", lambda event: self.switched.clear())
 
     def initGrid(self, rows, cols, rad):
         xOffset = 1.5 * rad
@@ -85,7 +88,7 @@ class HexGrid(Canvas):
                 if (row + col) % 2 == 0: # when row and col both even or odd
                     continue
                 h = Hex(self, self.startX + col * xOffset, self.startY + row * yOffset, rad, '{}.{}'.format(row, col))
-                colored = random.randint(0, 4) < 2
+                colored = random.randint(0, 4) < 2 # EXPECT 40% OF HEXAGONS TO BE COLORED
                 self.hexDict[h.tags] = {
                     'cell' : h, 
                     'row' : row, 
@@ -98,13 +101,23 @@ class HexGrid(Canvas):
                 h.draw()
                 self.grid.append(h)
 
-    def handleMouseClick(self, event):
+    """
+    If selected hexagon is white, then it should now be green (user believes this is part of the solution)
+    If selected hexagon is gray, then do nothing
+    """
+    def handleLeftMouseClick(self, event):
         self.switched.clear()
         x, y = event.x, event.y
-        hex = self.grid[self.find_closest(x, y)[0]-1] # better more smart way of doing this is checking the dictionary
-
-        if not hex.inRadius(x,y):
-            return
+        
+        try:
+            hex = self.grid[self.find_closest(x, y)[0]-1] # better more smart way of doing this is checking the dictionary
+            if not hex.inRadius(x,y):
+                return
+        except:
+            return 
+        
+        color = self.itemconfig(hex.tags)['fill'][-1]
+        if color == 'gray': return
         
         hex._switch()
         if hex.selected:
@@ -113,16 +126,24 @@ class HexGrid(Canvas):
             self.itemconfig(hex.tags, fill='white', activefill='yellow')
 
         self.switched.append(hex)
-        print(hex.tags)
+        # print(hex.tags)
         self.checkForComplete(2*self.rows-1, self.cols)
 
-    def handleMouseMotion(self, event):
+    def handleLeftMouseMotion(self, event):
         x, y = event.x, event.y
-        hex = self.grid[self.find_closest(x,y)[0]-1]
         
-        if not hex.inRadius(x,y) or hex in self.switched:
-            return
+        try:
+            hex = self.grid[self.find_closest(x, y)[0]-1] # better more smart way of doing this is checking the dictionary
+            if not hex.inRadius(x,y):
+                return
+            if hex in self.switched:
+                return
+        except:
+            return 
         
+        color = self.itemconfig(hex.tags)['fill'][-1]
+        if color == 'gray': return
+
         hex._switch()
         if hex.selected:
             self.itemconfig(hex.tags, fill='green', activefill='')
@@ -130,8 +151,60 @@ class HexGrid(Canvas):
             self.itemconfig(hex.tags, fill='white', activefill='yellow')
         
         self.switched.append(hex)
-        print(hex.tags)
+        # print(hex.tags)
         self.checkForComplete(2*self.rows-1, self.cols)
+
+    """
+    If selected hexagon is white, then it should now be gray (user believes this is not part of the solution)
+    If selected hexagon is green, then do nothing
+    """
+    def handleRightMouseClick(self, event):
+        self.switched.clear()
+        x, y = event.x, event.y
+
+        try:
+            hex = self.grid[self.find_closest(x, y)[0]-1] # better more smart way of doing this is checking the dictionary
+            if not hex.inRadius(x,y):
+                return
+        except:
+            return 
+
+        color = self.itemconfig(hex.tags)['fill'][-1]
+        # hex._switch()
+        if color == 'green': return
+        
+        if color == 'white':
+            self.itemconfig(hex.tags, fill='gray', activefill = '')
+        else:
+            self.itemconfig(hex.tags, fill='white', activefill = 'yellow')
+
+        self.switched.append(hex)
+        # print(hex.tags)
+        # self.checkForComplete(2*self.rows-1, self.cols)
+
+    def handleRightMouseMotion(self, event):
+        x, y = event.x, event.y
+        
+        try:
+            hex = self.grid[self.find_closest(x, y)[0]-1] # better more smart way of doing this is checking the dictionary
+            if not hex.inRadius(x,y):
+                return
+            if hex in self.switched:
+                return
+        except:
+            return 
+        
+        color = self.itemconfig(hex.tags)['fill'][-1]
+        if color == 'green': return
+
+        if color == 'white':
+            self.itemconfig(hex.tags, fill='gray', activefill = '')
+        else:
+            self.itemconfig(hex.tags, fill='white', activefill = 'yellow')
+        
+        self.switched.append(hex)
+        # print(hex.tags)
+        # self.checkForComplete(2*self.rows-1, self.cols)
 
     def printColumnLabels(self, cols):
         for i in range(cols):
@@ -182,10 +255,10 @@ class HexGrid(Canvas):
             i += 1 
 
     def checkForComplete(self, rows, cols):
-        # print(self.checkCols(cols))
-        # print(self.checkRightDiag(cols))
-        # print(self.checkLeftDiag(rows, cols))
-        return self.checkCols(cols) and self.checkRightDiag(cols) and self.checkLeftDiag(rows, cols)
+        result = self.checkCols(cols) and self.checkRightDiag(cols) and self.checkLeftDiag(rows, cols)
+        if result:
+            print('YAYYYY')
+        # return self.checkCols(cols) and self.checkRightDiag(cols) and self.checkLeftDiag(rows, cols)
 
     def checkCols(self, cols):
         for i in range(cols):
@@ -246,7 +319,7 @@ from math import comb
 if __name__ == "__main__":
     app = Tk()
 
-    grid = HexGrid(app, 4, 5, 75) # (4,5) (5,7) (6,9) (7, 11)
+    grid = HexGrid(app, 4, 5, 75) # (4,5) (5,7) (6,9) (7, 11) <-- other options for first two arguments
     grid.pack()
 
     app.mainloop()
