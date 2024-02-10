@@ -1,4 +1,4 @@
-# Hexagon Game
+# [Hexagram](https://hexagram.glitch.me)
 ## Idea
 This game is a subset of the nonogram games, but with a hexagon layout.
 This means that the user gets clues on the three open sides of the hexagon tessellation.
